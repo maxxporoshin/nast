@@ -19,15 +19,14 @@ def greedy(G, k):
         found = False
         chain, stack = [], [(v, [v])]
         while not found and stack:
-            i, path = stack.pop()
+            i, path = stack.pop(0)
             for j in range(n):
                 if G[i][j] == 1 and j in vertices and j not in path:
-                    path.append(j)
-                    if len(path) == k + 1:
+                    if len(path) == k:
                         found = True
-                        chain = path
-                    stack.append((j, path))
-                    break
+                        chain = path + [j]
+                        break
+                    stack.append((j, path + [j]))
         if chain:
             chains.append(chain)
             for l in chain:
@@ -38,4 +37,4 @@ def greedy(G, k):
 
 
 G = generate_graph(10, 0.6)
-print(greedy(G, 2))
+print(greedy(G, 3))
