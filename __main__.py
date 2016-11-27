@@ -24,7 +24,7 @@ def greedy(G, k, vertices=[]):
         found = False
         chain, stack = [], [(v, [v])]
         while not found and stack:
-            i, path = stack.pop(0)
+            i, path = stack.pop()
             for j in range(n):
                 if G[i][j] == 1 and j in vertices and j not in path:
                     if len(path) == k:
