@@ -1,4 +1,8 @@
 import random
+import copy
+import time
+import itertools
+import math
 
 
 def generate_graph(n, p):
@@ -10,9 +14,10 @@ def generate_graph(n, p):
     return G
 
 
-def greedy(G, k):
+def greedy(G, k, vertices=[]):
     n = len(G)
-    vertices = list(range(n))
+    if not vertices:
+        vertices = list(range(n))
     chains = []
     while vertices:
         v = vertices[0]
@@ -36,5 +41,76 @@ def greedy(G, k):
     return chains
 
 
-G = generate_graph(10, 0.6)
-print(greedy(G, 3))
+def local_search(S, G, k):
+    solution = copy.deepcopy(S)
+    iterations = 0
+    more_chains = True
+    while more_chains:
+        more_chains = False
+        for i in range(len(solution)):
+            T = copy.deepcopy(solution)
+            T.pop(i)
+            vertices = set(range(len(G)))
+            for chain in T:
+                vertices = vertices - set(chain)
+            new_chains = greedy(G, k, list(vertices))
+            if len(new_chains) > 1:
+                solution = T + new_chains
+                more_chains = True
+                break
+        iterations += 1
+    print('Iterations: ' + str(iterations))
+    return solution
+
+
+def simulated_annealing(S, G, k, p1, p2):
+        solution = copy.deepcopy(S)
+        iterations = 0
+        more_chains = True
+        while more_chains:
+            more_chains = False
+            for i in range(len(solution)):
+                T = copy.deepcopy(solution)
+                T.pop(i)
+                vertices = set(range(len(G)))
+                for chain in T:
+                    vertices = vertices - set(chain)
+                new_chains = greedy(G, k, list(vertices))
+                if len(new_chains) > 1 or random.random() < math.exp(-p1 * iterations):
+                    solution = T + new_chains
+                    more_chains = True
+                    break
+            if not more_chains:
+                subsets = itertools.combinations(range(len(solution)), 2)
+                for subset in subsets:
+                    T = copy.deepcopy(solution)
+                    T.pop(subset[1])
+                    T.pop(subset[0])
+                    vertices = set(range(len(G)))
+                    for chain in T:
+                        vertices = vertices - set(chain)
+                    new_chains = greedy(G, k, list(vertices))
+                    if len(new_chains) > 2 or random.random() < math.exp(-p2 * iterations):
+                        solution = T + new_chains
+                        more_chains = True
+                        break
+            iterations += 1
+        print('Iterations: ' + str(iterations))
+        return solution
+
+
+G = generate_graph(100, 0.1)
+k = 3
+print('Greedy:')
+t = time.time()
+greedy_solution = greedy(G, k)
+print(len(greedy_solution))
+print('{0:e}'.format(time.time() - t))
+print('Local search:')
+t = time.time()
+print(len(local_search(greedy_solution, G, k)))
+print('{0:e}'.format(time.time() - t))
+print('Simulated annealing:')
+t = time.time()
+print(len(simulated_annealing(greedy_solution, G, k, 0.5, 0.5)))
+print('{0:e}'.format(time.time() - t))
