@@ -19,15 +19,16 @@ def greedy(G, k, vertices=[]):
     if not vertices:
         vertices = list(range(n))
     chains = []
-    while vertices:
-        v = vertices[0]
+    vertices_to_try = vertices[:]
+    while vertices_to_try:
+        v = vertices_to_try[0]
         found = False
         chain, stack = [], [(v, [v])]
         while not found and stack:
             i, path = stack.pop()
             for j in range(n):
                 if G[i][j] == 1 and j in vertices and j not in path:
-                    if len(path) == k:
+                    if len(path) == k - 1:
                         found = True
                         chain = path + [j]
                         break
@@ -36,8 +37,10 @@ def greedy(G, k, vertices=[]):
             chains.append(chain)
             for l in chain:
                 vertices.remove(l)
+                if l in vertices_to_try:
+                    vertices_to_try.remove(l)
         else:
-            vertices.remove(v)
+            vertices_to_try.remove(v)
     return chains
 
 
@@ -104,7 +107,7 @@ k = 3
 print('Greedy:')
 t = time.time()
 greedy_solution = greedy(G, k)
-print(len(greedy_solution))
+print(greedy_solution)
 print('{0:e}'.format(time.time() - t))
 print('Local search:')
 t = time.time()
